@@ -34,14 +34,15 @@
 - **Standalone Rest Intervals**: Dedicated rest blocks for water breaks, station transitions, and post-circuit recovery.
 - **Interactive Sequence Preview**: Live preview shows step timing and the exact interval flow before saving.
 
-### 🔊 Distinct Synthesized Audio Tones & Haptics
-Built using low-latency real-time PCM synthesis via Android `AudioTrack` (zero external asset dependencies):
-- 🧘 **Rest Tone**: Gentle descending two-tone chime when entering rest intervals.
-- ⚡ **Next Set Tone**: Energetic double-beep signaling the end of rest and the start of the next set.
-- 🚀 **Next Phase Tone**: Ascending triple-alert announcing a new exercise.
-- 🏆 **Done Fanfare**: Celebratory multi-note victory fanfare upon completing the workout.
-- ⏱️ **3-2-1 Countdown Ticks**: Crisp tick beeps during the final 3 seconds of any interval.
-- **Audio & Ambience Modal**: Audition each tone directly and configure sound, vibration, and countdown toggles.
+### 🔊 Customizable Audio & Family-Friendly Sound Profiles
+Built using low-latency real-time PCM synthesis via Android `AudioTrack` and Android `TextToSpeech` (zero external asset dependencies):
+- **In-App Master Volume Slider**: Direct 0%–100% volume scaling independent of system ringer volume (dial down to a 20% gentle gym whisper).
+- 🔔 **Mellow Chimes (Kid & Family Friendly)**: Warm acoustic bells, marimba chords, and soft exponential decay without piercing electronic beeps.
+- 🗣️ **Spoken Voice Coach**: Speaks exercise names, sets, rests, and completion aloud in a natural calm voice.
+- 🎛️ **Modern Synth**: Original crisp electronic gym transition beeps for noisy workout spaces.
+- 📳 **Stealth (Vibration Only)**: 100% silent speaker mode using tactile haptic pulses (short double-buzz for next set, long pulse for rest, fanfare pulse for done).
+- ⏱️ **3-2-1 Countdown Ticks Toggle**: Easily disable pre-set countdown beeps to reduce noise while keeping transition chimes.
+- **Audio & Ambience Modal**: Audition each tone directly and configure volume, profile, and vibration settings.
 
 ### 🌙 Low-Light Gym OLED Dark Mode
 - **Pure Black (#000000)** background reduces eye strain in dim gym lighting and maximizes battery efficiency on OLED screens.

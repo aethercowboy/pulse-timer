@@ -27,9 +27,12 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.SpatialAudio
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
@@ -69,6 +72,7 @@ fun TimerScreen(
   isCompleted: Boolean,
   isScreenLocked: Boolean,
   soundEnabled: Boolean,
+  soundProfile: com.example.audio.SoundProfile,
   elapsedTotalSeconds: Int,
   onTogglePlayPause: () -> Unit,
   onSkipNext: () -> Unit,
@@ -76,6 +80,8 @@ fun TimerScreen(
   onAdjustTime: (Int) -> Unit,
   onToggleLock: () -> Unit,
   onToggleSound: () -> Unit,
+  onToggleStealthMode: () -> Unit,
+  onOpenSoundSettings: () -> Unit,
   onRestart: () -> Unit,
   onExit: () -> Unit
 ) {
@@ -143,16 +149,30 @@ fun TimerScreen(
             }
           }
 
-          Row {
-            // Sound quick mute toggle
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            val isStealth = soundProfile == com.example.audio.SoundProfile.STEALTH_VIBRATE
+
+            // Stealth mode quick toggle (vibrate only)
             IconButton(
-              onClick = onToggleSound,
-              modifier = Modifier.testTag("timer_sound_toggle")
+              onClick = onToggleStealthMode,
+              modifier = Modifier.testTag("timer_stealth_toggle")
             ) {
               Icon(
-                imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeMute,
-                contentDescription = "Toggle Audio",
-                tint = if (soundEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                imageVector = if (isStealth) Icons.Default.VolumeMute else Icons.Default.VolumeUp,
+                contentDescription = if (isStealth) "Exit Stealth Mode" else "Switch to Stealth Mode",
+                tint = if (isStealth) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+              )
+            }
+
+            // Quick Audio & Ambience settings dialog
+            IconButton(
+              onClick = onOpenSoundSettings,
+              modifier = Modifier.testTag("timer_sound_settings_button")
+            ) {
+              Icon(
+                imageVector = Icons.Default.Tune,
+                contentDescription = "Sound Settings & Volume",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
               )
             }
 
@@ -167,6 +187,40 @@ fun TimerScreen(
                 tint = if (isScreenLocked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
               )
             }
+          }
+        }
+
+        // Sound Profile Indicator Pill
+        val isStealth = soundProfile == com.example.audio.SoundProfile.STEALTH_VIBRATE
+        Box(
+          modifier = Modifier
+            .clip(RoundedCornerShape(100.dp))
+            .background(if (isStealth) MaterialTheme.colorScheme.error.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            .border(1.dp, if (isStealth) MaterialTheme.colorScheme.error.copy(alpha = 0.4f) else Color.Transparent, RoundedCornerShape(100.dp))
+            .clickable(onClick = onOpenSoundSettings)
+            .padding(horizontal = 10.dp, vertical = 3.dp)
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            val icon = when (soundProfile) {
+              com.example.audio.SoundProfile.STEALTH_VIBRATE -> Icons.Default.VolumeMute
+              com.example.audio.SoundProfile.MELLOW_CHIMES -> Icons.Default.SpatialAudio
+              com.example.audio.SoundProfile.VOICE_COACH -> Icons.Default.RecordVoiceOver
+              com.example.audio.SoundProfile.MODERN_SYNTH -> Icons.Default.VolumeUp
+            }
+            Icon(
+              imageVector = icon,
+              contentDescription = null,
+              tint = if (isStealth) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+              modifier = Modifier.size(13.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+              text = soundProfile.displayName.uppercase(),
+              style = MaterialTheme.typography.labelSmall,
+              fontWeight = FontWeight.Bold,
+              fontSize = 10.sp,
+              color = if (isStealth) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            )
           }
         }
 

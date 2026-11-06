@@ -64,6 +64,8 @@ fun WorkoutApp(viewModel: WorkoutViewModel) {
   val currentScreen by viewModel.currentScreen.collectAsState()
   val themeMode by viewModel.themeMode.collectAsState()
   val soundEnabled by viewModel.soundEnabled.collectAsState()
+  val soundProfile by viewModel.soundProfile.collectAsState()
+  val volumeLevel by viewModel.volumeLevel.collectAsState()
   val vibrationEnabled by viewModel.vibrationEnabled.collectAsState()
   val countdownTicksEnabled by viewModel.countdownTicksEnabled.collectAsState()
 
@@ -113,6 +115,7 @@ fun WorkoutApp(viewModel: WorkoutViewModel) {
           isCompleted = isCompleted,
           isScreenLocked = isScreenLocked,
           soundEnabled = soundEnabled,
+          soundProfile = soundProfile,
           elapsedTotalSeconds = elapsedTotalSeconds,
           onTogglePlayPause = { viewModel.togglePlayPause() },
           onSkipNext = { viewModel.skipToNext() },
@@ -120,6 +123,8 @@ fun WorkoutApp(viewModel: WorkoutViewModel) {
           onAdjustTime = { viewModel.adjustTime(it) },
           onToggleLock = { viewModel.toggleScreenLock() },
           onToggleSound = { viewModel.setSoundEnabled(!soundEnabled) },
+          onToggleStealthMode = { viewModel.toggleStealthMode() },
+          onOpenSoundSettings = { showSoundDialog = true },
           onRestart = { viewModel.restartCurrentWorkout() },
           onExit = { viewModel.exitWorkout() }
         )
@@ -152,10 +157,14 @@ fun WorkoutApp(viewModel: WorkoutViewModel) {
   if (showSoundDialog) {
     SoundTesterDialog(
       soundEnabled = soundEnabled,
+      soundProfile = soundProfile,
+      volumeLevel = volumeLevel,
       vibrationEnabled = vibrationEnabled,
       countdownTicksEnabled = countdownTicksEnabled,
       themeMode = themeMode,
       onSoundToggle = { viewModel.setSoundEnabled(it) },
+      onSoundProfileChange = { viewModel.setSoundProfile(it) },
+      onVolumeChange = { viewModel.setVolumeLevel(it) },
       onVibrationToggle = { viewModel.setVibrationEnabled(it) },
       onCountdownTicksToggle = { viewModel.setCountdownTicksEnabled(it) },
       onThemeChange = { viewModel.setThemeMode(it) },

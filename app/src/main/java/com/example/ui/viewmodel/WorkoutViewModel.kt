@@ -62,6 +62,12 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
   private val _soundEnabled = MutableStateFlow(true)
   val soundEnabled: StateFlow<Boolean> = _soundEnabled.asStateFlow()
 
+  private val _soundProfile = MutableStateFlow(com.example.audio.SoundProfile.MELLOW_CHIMES)
+  val soundProfile: StateFlow<com.example.audio.SoundProfile> = _soundProfile.asStateFlow()
+
+  private val _volumeLevel = MutableStateFlow(0.5f)
+  val volumeLevel: StateFlow<Float> = _volumeLevel.asStateFlow()
+
   private val _vibrationEnabled = MutableStateFlow(true)
   val vibrationEnabled: StateFlow<Boolean> = _vibrationEnabled.asStateFlow()
 
@@ -71,6 +77,25 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
   fun setSoundEnabled(enabled: Boolean) {
     _soundEnabled.value = enabled
     toneManager.soundEnabled = enabled
+  }
+
+  fun setSoundProfile(profile: com.example.audio.SoundProfile) {
+    _soundProfile.value = profile
+    toneManager.soundProfile = profile
+  }
+
+  fun setVolumeLevel(volume: Float) {
+    val clamped = volume.coerceIn(0.05f, 1.0f)
+    _volumeLevel.value = clamped
+    toneManager.volumeLevel = clamped
+  }
+
+  fun toggleStealthMode() {
+    if (_soundProfile.value == com.example.audio.SoundProfile.STEALTH_VIBRATE) {
+      setSoundProfile(com.example.audio.SoundProfile.MELLOW_CHIMES)
+    } else {
+      setSoundProfile(com.example.audio.SoundProfile.STEALTH_VIBRATE)
+    }
   }
 
   fun setVibrationEnabled(enabled: Boolean) {
@@ -84,7 +109,18 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
   }
 
   fun playTestTone(toneType: WorkoutToneType) {
-    toneManager.playTone(toneType)
+    toneManager.playTone(toneType, when (toneType) {
+      WorkoutToneType.REST -> "Rest period"
+      WorkoutToneType.NEXT_SET -> "Next set"
+      WorkoutToneType.NEXT_PHASE -> "Next exercise"
+      WorkoutToneType.DONE -> "Workout complete!"
+      WorkoutToneType.COUNTDOWN_TICK -> null
+    })
+  }
+
+  override fun onCleared() {
+    super.onCleared()
+    toneManager.shutdown()
   }
 
   // --- Day Filtering & Navigation ---
@@ -178,7 +214,8 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     _currentScreen.value = ScreenState.TIMER
 
     // Sound signal: Next phase started
-    toneManager.playTone(WorkoutToneType.NEXT_PHASE)
+    val firstInterval = queue.first()
+    toneManager.playTone(WorkoutToneType.NEXT_PHASE, "Starting: ${firstInterval.exerciseName}")
     startTimerLoop()
   }
 
@@ -232,7 +269,7 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
       _isWorkoutCompleted.value = true
       _currentSecondsLeft.value = 0
       timerJob?.cancel()
-      toneManager.playTone(WorkoutToneType.DONE)
+      toneManager.playTone(WorkoutToneType.DONE, "Workout complete! Fantastic work!")
       return
     }
 
@@ -246,15 +283,22 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     if (next != null && current != null) {
       when {
         next.phaseType == PhaseType.REST -> {
-          toneManager.playTone(WorkoutToneType.REST)
+          val phrase = if (next.isRestBetweenSets) {
+            "Rest for ${next.durationSeconds} seconds"
+          } else {
+            "Rest break: ${next.exerciseName}"
+          }
+          toneManager.playTone(WorkoutToneType.REST, phrase)
         }
         next.stepId == current.stepId && next.phaseType == PhaseType.WORK -> {
           // Next set of same exercise
-          toneManager.playTone(WorkoutToneType.NEXT_SET)
+          val phrase = "Set ${next.currentSet} of ${next.totalSets}"
+          toneManager.playTone(WorkoutToneType.NEXT_SET, phrase)
         }
         else -> {
           // New exercise / phase
-          toneManager.playTone(WorkoutToneType.NEXT_PHASE)
+          val phrase = if (next.phaseType == PhaseType.COOLDOWN) "Cooldown: ${next.exerciseName}" else "Next exercise: ${next.exerciseName}"
+          toneManager.playTone(WorkoutToneType.NEXT_PHASE, phrase)
         }
       }
     }
